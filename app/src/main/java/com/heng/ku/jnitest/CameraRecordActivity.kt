@@ -1,5 +1,6 @@
 package com.heng.ku.jnitest
 
+import android.graphics.Bitmap
 import android.graphics.SurfaceTexture
 import android.hardware.Camera
 import android.media.AudioFormat
@@ -25,7 +26,7 @@ private const val bitPerSample = 16//每个采样占的字节数
 /**
  * 使用相机进行录制
  */
-class CameraRecordActivity : AppCompatActivity() {
+class CameraRecordActivity : AppCompatActivity(), Camera.PreviewCallback {
 
     private val TAG = "CameraRecordActivity"
     private var camera: Camera? = null
@@ -141,6 +142,7 @@ class CameraRecordActivity : AppCompatActivity() {
         }
         camera?.parameters = params
         camera?.startPreview()
+        camera?.setPreviewCallback(this)
     }
 
     override fun onPause() {
@@ -162,5 +164,12 @@ class CameraRecordActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         camera?.startPreview()
+    }
+
+    override fun onPreviewFrame(data: ByteArray, camera: Camera) {
+                //测试是否有回调帧
+        val tool= NV21ToBitmap(this)
+        val bitmap: Bitmap = tool.nv21ToBitmap(data,camera.parameters.previewSize.width,camera.parameters.previewSize.height)
+        iv_photo_show.setImageBitmap(bitmap)
     }
 }
