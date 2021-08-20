@@ -3,7 +3,11 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="../../../../../layout/custom_preview.xml" value="0.19895833333333332" />
+        <entry key="app/src/main/res/layout/activity_gl_video_play.xml" value="0.1296875" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.1296875" />
+        <entry key="app/src/main/res/layout/activity_record_video_sdk.xml" value="0.15989583333333332" />
+        <entry key="app/src/main/res/layout/activity_view_test.xml" value="0.18206521739130435" />
       </map>
     </option>
   </component>

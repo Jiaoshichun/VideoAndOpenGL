@@ -25,6 +25,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".VideoPlayActivity" />
+        <activity android:name=".RecordVideoSdkActivity" />
         <activity android:name=".GlTriangleActivity" />
         <activity android:name=".GlVideoPlayActivity" />
         <activity android:name=".SoulVideoPlayActivity" />

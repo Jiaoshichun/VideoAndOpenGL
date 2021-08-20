@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:ignore="MissingDefaultResource">
+
+    <com.heng.record.video.view.RecordVideoView
+            android:id="@+id/recordVideoView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+        <Button
+                android:id="@+id/btnStartPreview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="开始预览" />
+
+        <Button
+                android:id="@+id/btnStartRecord"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="开始录制" />
+
+        <Button
+                android:id="@+id/btnStopPreview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="停止预览" />
+
+        <Button
+                android:id="@+id/btnStopRecord"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="停止录制" />
+    </LinearLayout>
+</RelativeLayout>

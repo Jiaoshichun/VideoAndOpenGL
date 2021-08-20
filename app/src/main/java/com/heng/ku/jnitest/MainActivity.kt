@@ -124,6 +124,9 @@ class MainActivity : AppCompatActivity() {
         btn_camera_record.setOnClickListener {
             startActivity(Intent(this, CameraRecordActivity::class.java))
         }
+        btn_camera_record_sdk.setOnClickListener {
+            startActivity(Intent(this, RecordVideoSdkActivity::class.java))
+        }
         isLaunchByVirtualApp()
         GlobalScope.launch  (Dispatchers.Main){
            val io1 = withContext(Dispatchers.IO) {
