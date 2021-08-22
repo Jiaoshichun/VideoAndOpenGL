@@ -1,6 +1,7 @@
 package com.heng.record.video.view
 
 import android.content.Context
+import android.graphics.ImageFormat
 import android.graphics.SurfaceTexture
 import android.hardware.Camera
 import android.util.AttributeSet
@@ -74,11 +75,6 @@ class RecordVideoView @JvmOverloads constructor(
      */
     private val videoDrawer = VideoDrawer().apply {
         eglRender.addDrawer(this)
-        setVideoWh(
-            RecordeVideoConfig.previewWidth,
-            RecordeVideoConfig.previewHeight
-        )
-
         setTexture(texture)
     }
 
@@ -98,8 +94,11 @@ class RecordVideoView @JvmOverloads constructor(
         setVideoDrawerRotation(cameraId)
         camera = Camera.open(cameraId)
         val params = camera!!.parameters
+        params.previewFormat = ImageFormat.NV21;
+
         params.setPreviewSize(RecordeVideoConfig.previewWidth, RecordeVideoConfig.previewHeight)
         camera!!.setPreviewTexture(it)
+
         // 设置自动对焦
         val focusModes = params.supportedFocusModes
         if (null != focusModes && focusModes.size > 0
@@ -116,6 +115,11 @@ class RecordVideoView @JvmOverloads constructor(
      * 设置drawer旋转角度
      */
     private fun setVideoDrawerRotation(cameraId: Int) {
+        videoDrawer.setVideoWh(
+            RecordeVideoConfig.previewWidth,
+            RecordeVideoConfig.previewHeight
+        )
+
         if (RecordeVideoConfig.videoOrientation == RecordeVideoConfig.VIDEO_ORIENTATION_PORTRAIT) {
             //竖屏前置旋转270度 后置旋转90度
             videoDrawer.setRotationAngle(if (cameraId == Camera.CameraInfo.CAMERA_FACING_BACK) 90 else 270)
@@ -166,13 +170,14 @@ class RecordVideoView @JvmOverloads constructor(
         isRecordAudio = false
         audioRecordUtils.stop()
         videoEncoder?.stop()
-        videoEncoder = null
         audioEncoder?.stop()
-        audioEncoder = null
         eglRender.isStart = false
         videoEncoder?.mSurface?.let {
             eglRender.removeSurface(it)
         }
+        videoEncoder = null
+        audioEncoder = null
+
     }
 
     /**

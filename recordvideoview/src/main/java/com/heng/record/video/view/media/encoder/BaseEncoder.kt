@@ -91,6 +91,7 @@ abstract class BaseEncoder(
             LogUtils.i(TAG, "release")
             mediaCodec.stop()
             mediaCodec.release()
+
             release(muxer)
         } catch (e: Exception) {
             e.printStackTrace()

@@ -13,7 +13,7 @@ import java.nio.ByteBuffer
  */
 
 private const val TAG = "AudioEncoder"
-private const val compressionRatio =0.5f
+private const val compressionRatio = 0.5f
 
 class AudioEncoder(
     mMuxer: MMuxer,
@@ -30,15 +30,15 @@ class AudioEncoder(
         audioFormat.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 100 * 1024)
         audioFormat.setInteger(MediaFormat.KEY_CHANNEL_COUNT, channelCount)
         try {
-            configEncoderWithCQ(mediaCodec, audioFormat)
+//            configEncoderWithCQ(mediaCodec, audioFormat)
+//        } catch (e: Exception) {
+//            e.printStackTrace()
+//            try {
+            configEncoderWithVBR(mediaCodec, audioFormat)
         } catch (e: Exception) {
             e.printStackTrace()
-            try {
-                configEncoderWithVBR(mediaCodec, audioFormat)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                LogUtils.e(TAG, "配置音频编码器失败")
-            }
+            LogUtils.e(TAG, "配置音频编码器失败")
+//            }
         }
     }
 
@@ -78,6 +78,7 @@ class AudioEncoder(
     override fun addTrack(muxer: MMuxer, format: MediaFormat) {
         muxer.addAudioTrack(format)
     }
+
     //audio/mp4a-latm"
     override fun encodeType() = "audio/mp4a-latm"
 

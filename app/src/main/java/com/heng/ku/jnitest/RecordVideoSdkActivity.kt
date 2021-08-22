@@ -4,6 +4,7 @@ import android.hardware.Camera
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
+import com.heng.record.video.view.RecordeVideoConfig
 import kotlinx.android.synthetic.main.activity_record_video_sdk.*
 import java.io.File
 
@@ -11,6 +12,11 @@ class RecordVideoSdkActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_record_video_sdk)
+//        RecordeVideoConfig.previewHeight=720
+//        RecordeVideoConfig.previewWidth=1280
+//        RecordeVideoConfig.videoWidth=720
+//        RecordeVideoConfig.videoHeight=1280
+
         btnStartRecord.setOnClickListener {
             recordVideoView.startRecordVideo(VIDEO_FILE1)
         }
@@ -18,7 +24,7 @@ class RecordVideoSdkActivity : AppCompatActivity() {
             recordVideoView.stopRecordVideo()
         }
         btnStartPreview.setOnClickListener {
-            recordVideoView.startPreview(Camera.CameraInfo.CAMERA_FACING_FRONT)
+            recordVideoView.startPreview(Camera.CameraInfo.CAMERA_FACING_BACK)
         }
         btnStopPreview.setOnClickListener {
             recordVideoView.stopPreview()
