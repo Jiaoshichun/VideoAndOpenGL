@@ -5,7 +5,7 @@ import android.graphics.SurfaceTexture
 import android.opengl.GLES11Ext
 import android.opengl.GLES20
 import android.opengl.Matrix
-import android.util.Log
+import com.heng.record.video.view.utils.LogUtils
 import com.heng.record.video.view.opengl.OpenGLTools.loadShader
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -354,7 +354,7 @@ class VideoDrawer : IDrawer {
                 else -> Pair(w, h)
 
             }
-            Log.d(TAG, "translate: x:$x y:$y     w:$w h:$h   realAngle:$realAngle   final->:$a")
+            LogUtils.d(TAG, "translate: x:$x y:$y     w:$w h:$h   realAngle:$realAngle   final->:$a")
             Matrix.translateM(
                 it,
                 0,

@@ -1,12 +1,10 @@
-package com.heng.record.video.view.media
+package com.heng.record.video.view.utils
 
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.os.SystemClock
-import android.util.Log
-import java.lang.IllegalArgumentException
-import java.nio.ByteBuffer
+import com.heng.record.video.view.utils.LogUtils
 import kotlin.properties.Delegates
 
 
@@ -20,20 +18,20 @@ private val AUDIO_SOURCES = intArrayOf(
 )
 
 class AudioRecordUtils constructor(
-    private val sampleRate: Int = 44100,//采样率
-    private val channelCount: Int = 2,//声道数
-    private val audioFormat: Int = AudioFormat.ENCODING_PCM_16BIT//编码格式
+     val sampleRate: Int = 44100,//采样率
+     val channelCount: Int = 2,//声道数
+     val audioFormat: Int = AudioFormat.ENCODING_PCM_16BIT//编码格式
 ) {
     @Volatile
     private var isEOS = false //是否结束
 
     private var mAudioRecord: AudioRecord? = null
     private var mBufferSize by Delegates.notNull<Int>()
-    private var mByteBuffer: ByteBuffer? = null
+    private var mByteArrays: ByteArray? = null
     @Volatile
     private var isRunning = false//是否正在运行
     //读取到数据后的回调  数据byffer 长度  时间(纳秒)
-    private val mCallBackList = mutableListOf<(ByteBuffer, Int, Long) -> Unit>()
+    private val mCallBackList = mutableListOf<(ByteArray, Int, Long) -> Unit>()
 
     private fun initAudioRecord(
         channelCount: Int,
@@ -52,8 +50,8 @@ class AudioRecordUtils constructor(
                     "sampleRate:$sampleRate channelConfig:$channelConfig audioFormat:$audioFormat" +
                     "  channelCount:$channelCount")
         }
-        if (mByteBuffer == null)
-            mByteBuffer = ByteBuffer.allocateDirect(mBufferSize)
+        if (mByteArrays == null)
+            mByteArrays = ByteArray(mBufferSize)
         for (source in AUDIO_SOURCES) {
             try {
                 mAudioRecord = AudioRecord(
@@ -80,11 +78,11 @@ class AudioRecordUtils constructor(
         AudioThread().start()
     }
 
-    fun addCallBack(dataCallBack: ((ByteBuffer, Int, Long) -> Unit)) {
+    fun addCallBack(dataCallBack: ((ByteArray, Int, Long) -> Unit)) {
         mCallBackList.add(dataCallBack)
     }
 
-    fun removeCallBack(dataCallBack: ((ByteBuffer, Int, Long) -> Unit)) {
+    fun removeCallBack(dataCallBack: ((ByteArray, Int, Long) -> Unit)) {
         mCallBackList.remove(dataCallBack)
     }
 
@@ -102,15 +100,12 @@ class AudioRecordUtils constructor(
                 startTimeUs = SystemClock.elapsedRealtimeNanos()
                 mAudioRecord!!.startRecording()
                 while (!isEOS && isRunning) {
-                    mByteBuffer!!.clear()
-                    val size = mAudioRecord!!.read(mByteBuffer!!, mBufferSize)
-                    mByteBuffer!!.position(size)
-                    mByteBuffer!!.flip()
+                    val size = mAudioRecord!!.read(mByteArrays!!, 0,mBufferSize)
                     mCallBackList.forEach {
                         val l = SystemClock.elapsedRealtimeNanos() - startTimeUs
-                        Log.d(TAG, "startTimeUs:$startTimeUs   duration->$l")
+                        LogUtils.d(TAG, "startTimeUs:$startTimeUs   duration->$l")
                         it.invoke(
-                            mByteBuffer!!,
+                            mByteArrays!!.copyOf(),
                             size,
                             l
                         )
@@ -123,7 +118,8 @@ class AudioRecordUtils constructor(
             } finally {
                 mAudioRecord!!.stop()
                 mAudioRecord!!.release()
-                Log.d(TAG, "stop")
+                mAudioRecord=null
+                LogUtils.d(TAG, "stop")
             }
 
         }

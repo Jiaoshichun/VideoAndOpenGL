@@ -4,8 +4,8 @@ import android.media.MediaCodec
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.os.Build
-import android.util.Log
 import android.view.Surface
+import com.heng.record.video.view.utils.LogUtils
 import com.heng.record.video.view.media.MMuxer
 import java.nio.ByteBuffer
 
@@ -53,14 +53,14 @@ class VideoEncoder(mMuxer: MMuxer, width: Int, height: Int, private val frameRat
                 configEncoderWithVBR(mediaCodec, outputFormat)
             } catch (e: Exception) {
 //                e.printStackTrace()
-                Log.e(TAG, "配置视频编码器失败")
+                LogUtils.e(TAG, "配置视频编码器失败")
             }
         }
         mSurface = mediaCodec.createInputSurface()
     }
     private fun calcBitRate(): Int {
         val bitrate = (BPP * frameRate.toFloat() * width.toFloat() * height.toFloat()).toInt()
-        Log.i(TAG, String.format("bitrate=%5.2f[Mbps]", bitrate.toFloat() / 1024f / 1024f))
+        LogUtils.i(TAG, String.format("bitrate=%5.2f[Mbps]", bitrate.toFloat() / 1024f / 1024f))
         return bitrate
     }
     private fun configEncoderWithCQ(codec: MediaCodec, outputFormat: MediaFormat) {
@@ -71,7 +71,7 @@ class VideoEncoder(mMuxer: MMuxer, width: Int, height: Int, private val frameRat
                 MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_CQ
             )
         }
-        Log.d(TAG, "configEncoderWithCQ")
+        LogUtils.d(TAG, "configEncoderWithCQ")
         codec.configure(outputFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
     }
 
@@ -82,7 +82,7 @@ class VideoEncoder(mMuxer: MMuxer, width: Int, height: Int, private val frameRat
                 MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_VBR
             )
         }
-        Log.d(TAG, "configEncoderWithVBR")
+        LogUtils.d(TAG, "configEncoderWithVBR")
         codec.configure(outputFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
     }
 

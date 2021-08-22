@@ -2,7 +2,7 @@ package com.heng.record.video.view.media.encoder
 
 import android.media.MediaCodec
 import android.media.MediaFormat
-import android.util.Log
+import com.heng.record.video.view.utils.LogUtils
 import com.heng.record.video.view.media.Frame
 import com.heng.record.video.view.media.MMuxer
 import java.nio.ByteBuffer
@@ -54,7 +54,7 @@ abstract class BaseEncoder(
                 when {
                     encodeManually() -> encode(frame)
 //                    frame.buffer == null -> { // 如果是自动编码（比如视频），遇到结束帧的时候，直接结束掉
-//                        Log.d(TAG, "发送编码结束标志")
+//                        LogUtils.d(TAG, "发送编码结束标志")
 //                        // This may only be used with encoders receiving input from a Surface
 //                        mediaCodec.signalEndOfInputStream()
 //                        isEos = true
@@ -80,7 +80,7 @@ abstract class BaseEncoder(
             )
         }
         done()
-        Log.d(TAG, "编码完成")
+        LogUtils.d(TAG, "编码完成")
     }
 
     /**
@@ -88,7 +88,7 @@ abstract class BaseEncoder(
      */
     private fun done() {
         try {
-            Log.i(TAG, "release")
+            LogUtils.i(TAG, "release")
             mediaCodec.stop()
             mediaCodec.release()
             release(muxer)
@@ -110,8 +110,6 @@ abstract class BaseEncoder(
             if (frame.buffer == null || frame.bufferInfo.size <= 0) {
                 isEos = true
             } else {
-                frame.buffer?.flip()
-                frame.buffer?.mark()
                 mediaCodec.queueInputBuffer(
                     dequeueInputBufferIndex,
                     0,
@@ -120,7 +118,6 @@ abstract class BaseEncoder(
                     0
                 )
             }
-            frame.buffer?.clear()
         }
     }
 
@@ -155,7 +152,7 @@ abstract class BaseEncoder(
                 mediaCodec.dequeueOutputBuffer(
                     bufferInfo, 1000
                 )
-            Log.d(
+            LogUtils.d(
                 TAG,
                 "drain - time》${bufferInfo.presentationTimeUs} bufferInfo.flag:${bufferInfo.flags} index:$outputIndex"
             )
@@ -181,7 +178,7 @@ abstract class BaseEncoder(
 //                            bufferInfo.presentationTimeUs =
 //                                bufferInfo.presentationTimeUs - startTime
 //                        }
-                        Log.d(
+                        LogUtils.d(
                             TAG,
                             "drain - bufferInfo.flags:》${bufferInfo.flags}  " +
                                     "bufferInfo.presentationTimeUs:${bufferInfo.presentationTimeUs}  " +
@@ -206,7 +203,7 @@ abstract class BaseEncoder(
      */
     fun encodeOneFrame(frame: Frame) {
         if (isEos) return
-        Log.d(TAG, "encodeOneFrame->$frame")
+        LogUtils.d(TAG, "encodeOneFrame->$frame")
         synchronized(mFrames) {
             mFrames.addLast(frame)
         }

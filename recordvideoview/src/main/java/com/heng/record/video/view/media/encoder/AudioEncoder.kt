@@ -4,7 +4,7 @@ import android.media.MediaCodec
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.os.Build
-import android.util.Log
+import com.heng.record.video.view.utils.LogUtils
 import com.heng.record.video.view.media.MMuxer
 import java.nio.ByteBuffer
 
@@ -37,7 +37,7 @@ class AudioEncoder(
                 configEncoderWithVBR(mediaCodec, audioFormat)
             } catch (e: Exception) {
                 e.printStackTrace()
-                Log.e(TAG, "配置音频编码器失败")
+                LogUtils.e(TAG, "配置音频编码器失败")
             }
         }
     }

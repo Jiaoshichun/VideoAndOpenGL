@@ -3,7 +3,7 @@ package com.heng.record.video.view.media
 import android.media.MediaCodec
 import android.media.MediaFormat
 import android.media.MediaMuxer
-import android.util.Log
+import com.heng.record.video.view.utils.LogUtils
 import java.io.File
 import java.nio.ByteBuffer
 
@@ -77,7 +77,7 @@ class MMuxer(private val path: String) {
     fun writeAudioSampleData(byteBuffer: ByteBuffer, bufferInfo: MediaCodec.BufferInfo): Boolean {
         if (!isStart) return false
 
-        Log.d(TAG, "writeAudioSampleData->${bufferInfo.presentationTimeUs}")
+        LogUtils.d(TAG, "writeAudioSampleData->${bufferInfo.presentationTimeUs}")
         mediaMuxer?.writeSampleData(audioTrackIndex, byteBuffer, bufferInfo)
         return true
     }
@@ -85,14 +85,14 @@ class MMuxer(private val path: String) {
     // do not support out of order frames (timestamp: 104997 < last: 105520 for Audio track
     fun writeVideoSampleData(byteBuffer: ByteBuffer, bufferInfo: MediaCodec.BufferInfo): Boolean {
         if (!isStart) return false
-        Log.d(TAG, "writeVideoSampleData->${bufferInfo.presentationTimeUs}")
+        LogUtils.d(TAG, "writeVideoSampleData->${bufferInfo.presentationTimeUs}")
         mediaMuxer?.writeSampleData(videoTrackIndex, byteBuffer, bufferInfo)
         return true
     }
 
     private fun startMuxer() {
         if (hasAddAudioTrack && hasAddVideoTrack) {
-            Log.d(TAG, "startMuxer")
+            LogUtils.d(TAG, "startMuxer")
             mediaMuxer?.start()
             isStart = true
         }
@@ -102,13 +102,13 @@ class MMuxer(private val path: String) {
     private var mIsVideoEnd = false
 
     fun releaseVideoTrack() {
-        Log.d(TAG, "releaseVideoTrack")
+        LogUtils.d(TAG, "releaseVideoTrack")
         mIsVideoEnd = true
         release()
     }
 
     fun releaseAudioTrack() {
-        Log.d(TAG, "releaseAudioTrack")
+        LogUtils.d(TAG, "releaseAudioTrack")
         mIsAudioEnd = true
         release()
     }
@@ -122,7 +122,7 @@ class MMuxer(private val path: String) {
     @Synchronized
     private fun release() {
         if (mIsAudioEnd && mIsVideoEnd) {
-            Log.d(TAG, "release")
+            LogUtils.d(TAG, "release")
             try {
                 mediaMuxer?.stop()
                 mediaMuxer?.release()

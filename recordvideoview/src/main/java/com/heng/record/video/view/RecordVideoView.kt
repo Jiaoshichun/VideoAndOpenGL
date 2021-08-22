@@ -4,18 +4,17 @@ import android.content.Context
 import android.graphics.SurfaceTexture
 import android.hardware.Camera
 import android.util.AttributeSet
-import android.util.Log
 import android.view.Surface
 import android.view.TextureView
 import android.widget.FrameLayout
-import com.heng.record.video.view.media.AudioRecordUtils
 import com.heng.record.video.view.media.Frame
 import com.heng.record.video.view.media.MMuxer
 import com.heng.record.video.view.media.encoder.AudioEncoder
 import com.heng.record.video.view.media.encoder.VideoEncoder
 import com.heng.record.video.view.opengl.EGLRenderPro
 import com.heng.record.video.view.opengl.drawer.VideoDrawer
-import java.nio.ByteBuffer
+import com.heng.record.video.view.utils.AudioRecordUtils
+import com.heng.record.video.view.utils.WavFileUtils
 
 /**
  * 视频录制view
@@ -58,7 +57,10 @@ class RecordVideoView @JvmOverloads constructor(
     private var videoEncoder: VideoEncoder? = null
     private var audioEncoder: AudioEncoder? = null
 
-
+    /**
+     * wav录制工具类
+     */
+    private var wavFileUtils = WavFileUtils(audioRecordUtils)
     private val texture = SurfaceTexture(EGLRenderPro.TEXTURE_ID).apply {
         setOnFrameAvailableListener {
             if (isRecordVideo) {
@@ -67,35 +69,33 @@ class RecordVideoView @JvmOverloads constructor(
         }
     }
 
-    init {
-        initDrawer()
-    }
-
     /**
      * 初始化视频绘制
      */
-    private fun initDrawer() {
-        VideoDrawer().apply {
-            eglRender.addDrawer(this)
-            setVideoWh(
-                RecordeVideoConfig.previewWidth,
-                RecordeVideoConfig.previewHeight
-            )
-            if (RecordeVideoConfig.videoOrientation == RecordeVideoConfig.VIDEO_ORIENTATION_PORTRAIT) {
-                //竖屏需要旋转90度
-                setRotationAngle(90)
-            }
+    private val videoDrawer = VideoDrawer().apply {
+        eglRender.addDrawer(this)
+        setVideoWh(
+            RecordeVideoConfig.previewWidth,
+            RecordeVideoConfig.previewHeight
+        )
 
-            setTexture(texture)
-        }
+        setTexture(texture)
     }
 
+    /**
+     * 开始预览
+     * 开启相机
+     */
     override fun startPreview(cameraId: Int) {
         stopPreview()
         startCamera(texture, cameraId)
     }
 
+    /**
+     * 打开相机
+     */
     private fun startCamera(it: SurfaceTexture, cameraId: Int) {
+        setVideoDrawerRotation(cameraId)
         camera = Camera.open(cameraId)
         val params = camera!!.parameters
         params.setPreviewSize(RecordeVideoConfig.previewWidth, RecordeVideoConfig.previewHeight)
@@ -112,9 +112,28 @@ class RecordVideoView @JvmOverloads constructor(
         camera?.setPreviewCallback(this)
     }
 
+    /**
+     * 设置drawer旋转角度
+     */
+    private fun setVideoDrawerRotation(cameraId: Int) {
+        if (RecordeVideoConfig.videoOrientation == RecordeVideoConfig.VIDEO_ORIENTATION_PORTRAIT) {
+            //竖屏前置旋转270度 后置旋转90度
+            videoDrawer.setRotationAngle(if (cameraId == Camera.CameraInfo.CAMERA_FACING_BACK) 90 else 270)
+        }
+
+    }
+
+    /**
+     * 录制视频
+     * 开始时会先停止录制视频和音频
+     */
     override fun startRecordVideo(videoPath: String) {
         stopRecordVideo()
         stopRecordAudio()
+        if (camera == null) {
+            //相机未打开 不能录制
+
+        }
         isRecordVideo = true
         isRecordAudio = true
         val mMuxer = MMuxer(videoPath)
@@ -138,6 +157,9 @@ class RecordVideoView @JvmOverloads constructor(
         )
     }
 
+    /**
+     * 停止录制视频
+     */
     override fun stopRecordVideo() {
 
         isRecordVideo = false
@@ -153,21 +175,31 @@ class RecordVideoView @JvmOverloads constructor(
         }
     }
 
+    /**
+     * 开始录制音频
+     * 开始时会先停止录制视频和音频
+     */
     override fun startRecordAudio(audioPath: String) {
         stopRecordVideo()
         stopRecordAudio()
         isRecordVideo = false
         isRecordAudio = true
-        audioRecordUtils.start()
+        wavFileUtils.start(audioPath)
 
     }
 
+    /**
+     * 停止录制音频
+     */
     override fun stopRecordAudio() {
         isRecordVideo = false
         isRecordAudio = false
-        audioRecordUtils.stop()
+        wavFileUtils.stop()
     }
 
+    /**
+     * 停止预览
+     */
     override fun stopPreview() {
         isRecordVideo = false
         isRecordAudio = false
@@ -175,6 +207,13 @@ class RecordVideoView @JvmOverloads constructor(
         camera?.setPreviewCallback(null)
         camera?.release()
         camera = null
+    }
+
+    /**
+     * 设置回调
+     */
+    override fun setCallBack(callBack: IRecordVideoView.CallBack) {
+        this.mCallBack = callBack
     }
 
 
@@ -197,16 +236,18 @@ class RecordVideoView @JvmOverloads constructor(
     override fun onSurfaceTextureUpdated(surface: SurfaceTexture?) {
     }
 
-    private fun audioRecordCallBack(byteBuffer: ByteBuffer, size: Int, timeNs: Long) {
-        mCallBack?.onAudioFrame(byteBuffer, size)
+    /**
+     * AudioRecordUtils音频回调
+     * 如果录制视频，进行音频编码
+     * 如果录制音频，通过WavFileUtils存储音频
+     */
+    private fun audioRecordCallBack(byteArray: ByteArray, size: Int, timeNs: Long) {
+        mCallBack?.onAudioFrame(byteArray, size)
         if (isRecordVideo) {//如果录制视屏进行编码
             audioEncoder?.encodeOneFrame(Frame().apply {
-                buffer = byteBuffer
+                buffer = byteArray
                 setBufferInfo(0, size, (timeNs + 500) / 1000, 0)
             })
-        }
-        if (isRecordAudio) {//如果录制音频，将音频进行存储
-
         }
 
     }
@@ -216,14 +257,12 @@ class RecordVideoView @JvmOverloads constructor(
      */
     override fun onPreviewFrame(data: ByteArray?, camera: Camera?) {
         val bytes = data ?: return
-        mCallBack?.let {
-            it.onPreviewFrame(
-                bytes,
-                RecordeVideoConfig.previewWidth,
-                RecordeVideoConfig.previewHeight
-            )
-        }
+        mCallBack?.onPreviewFrame(
+            bytes,
+            RecordeVideoConfig.previewWidth,
+            RecordeVideoConfig.previewHeight
+        )
     }
 
-    var mCallBack: IRecordVideoView.CallBack? = null
+    private var mCallBack: IRecordVideoView.CallBack? = null
 }

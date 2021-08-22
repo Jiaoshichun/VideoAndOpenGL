@@ -1,8 +1,8 @@
 package com.heng.record.video.view.opengl
 
 import android.opengl.GLES20
-import android.util.Log
 import com.heng.record.video.view.BuildConfig
+import com.heng.record.video.view.utils.LogUtils
 
 object OpenGLTools {
     /**
@@ -28,8 +28,8 @@ object OpenGLTools {
             val compiled = IntArray(1)
             GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compiled, 0)
             if (compiled[0] == 0) {//若编译失败则显示错误日志并删除此shader
-                Log.e("ES20_ERROR", "Could not compile shader $type:");
-                Log.e("ES20_ERROR", GLES20.glGetShaderInfoLog(shader));
+                LogUtils.e("ES20_ERROR", "Could not compile shader $type:");
+                LogUtils.e("ES20_ERROR", GLES20.glGetShaderInfoLog(shader));
                 GLES20.glDeleteShader(shader)
                 return 0
             }
